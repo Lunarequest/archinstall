@@ -46,7 +46,10 @@ def ask_user_questions():
 	if archinstall.arguments.get('harddrive', None):
 		archinstall.arguments['harddrive'] = archinstall.BlockDevice(archinstall.arguments['harddrive'])
 	else:
-		archinstall.arguments['harddrive'] = archinstall.select_disk(archinstall.all_disks())
+		advanced=False
+		if archinstall.get("advanced",None):
+			advanced=True
+		archinstall.arguments['harddrive'] = archinstall.select_disk(archinstall.all_disks(advanced))
 		if archinstall.arguments['harddrive'] is None:
 			archinstall.arguments['target-mount'] = '/mnt'
 

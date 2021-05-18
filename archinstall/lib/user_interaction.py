@@ -1,5 +1,5 @@
 import getpass, pathlib, os, shutil, re, time
-from typing import Optional, Union, List, Dict
+from typing import Optional, Union, List, Dict, Tuple
 import sys, time, signal, ipaddress, logging
 import termios, tty, select # Used for char by char polling of sys.stdin
 from .exceptions import *
@@ -81,7 +81,7 @@ def get_password(prompt="Enter a password: ") -> Optional[str]:
 		return passwd
 	return None
 
-def print_large_list(options, padding=5, margin_bottom=0, separator=': ') -> Union[int,int]:
+def print_large_list(options, padding=5, margin_bottom=0, separator=': ') -> Tuple[int,int]:
 	highest_index_number_length = len(str(len(options)))
 	longest_line = highest_index_number_length + len(separator) + get_longest_option(options) + padding
 	spaces_without_option = longest_line - (len(separator) + highest_index_number_length)
@@ -120,7 +120,7 @@ def generic_multi_select(options, text="Select one or more of the options above 
 
 	section = MiniCurses(get_terminal_width(), len(options))
 
-	selected_options = []
+	selected_options: List = []
 
 	while True:
 		if not selected_options and default in options:
@@ -288,7 +288,7 @@ class MiniCurses():
 		if response:
 			return response
 
-def ask_for_superuser_account(prompt='Username for required superuser with sudo privileges: ', forced=False) -> Dict[Dict[str]]:
+def ask_for_superuser_account(prompt='Username for required superuser with sudo privileges: ', forced=False):
 	while 1:
 		new_user = input(prompt).strip(' ')
 
@@ -305,7 +305,7 @@ def ask_for_superuser_account(prompt='Username for required superuser with sudo 
 		password = get_password(prompt=f'Password for user {new_user}: ')
 		return {new_user: {"!password" : password}}
 
-def ask_for_additional_users(prompt='Any additional users to install (leave blank for no users): ') ->bool:
+def ask_for_additional_users(prompt='Any additional users to install (leave blank for no users): '):
 	users = {}
 	superusers = {}
 
@@ -348,7 +348,7 @@ def ask_for_bootloader() -> str:
 			bootloader="grub-install"
 	return bootloader
 
-def ask_for_audio_selection():
+def ask_for_audio_selection() -> str:
 	audio = "pulseaudio" # Default for most desktop environments
 	pipewire_choice = input("Would you like to install pipewire instead of pulseaudio as the default audio server? [Y/n] ").lower()
 	if pipewire_choice in ("y", ""):
@@ -356,7 +356,7 @@ def ask_for_audio_selection():
 
 	return audio
 
-def ask_to_configure_network():
+def ask_to_configure_network() -> Dict:
 	# Optionally configure one network interface.
 	#while 1:
 	# {MAC: Ifname}
@@ -400,7 +400,7 @@ def ask_to_configure_network():
 				gateway = input('Enter your gateway (router) IP address or leave blank for none: ').strip()
 				try:
 					if len(gateway) == 0:
-						gateway = None
+						gateway= None
 					else:
 						ipaddress.ip_address(gateway)
 					break
