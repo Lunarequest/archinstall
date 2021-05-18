@@ -1,4 +1,5 @@
 import getpass, pathlib, os, shutil, re, time
+from typing import Optional, Union, List, Dict
 import sys, time, signal, ipaddress, logging
 import termios, tty, select # Used for char by char polling of sys.stdin
 from .exceptions import *
@@ -13,16 +14,16 @@ from .hardware import AVAILABLE_GFX_DRIVERS, hasUEFI
 ## TODO: Some inconsistencies between the selection processes.
 ##       Some return the keys from the options, some the values?
 
-def get_terminal_height():
+def get_terminal_height() -> int:
 	return shutil.get_terminal_size().lines
 
-def get_terminal_width():
+def get_terminal_width() -> int:
 	return shutil.get_terminal_size().columns
 
 def get_longest_option(options):
 	return max([len(x) for x in options])
 
-def check_for_correct_username(username):
+def check_for_correct_username(username) -> bool:
 	if re.match(r'^[a-z_][a-z0-9_-]*\$?$', username) and len(username) <= 32:
 		return True
 	log(
@@ -67,7 +68,7 @@ def do_countdown():
 	signal.signal(signal.SIGINT, original_sigint_handler)
 	return True
 
-def get_password(prompt="Enter a password: "):
+def get_password(prompt="Enter a password: ") -> Optional[str]:
 	while (passwd := getpass.getpass(prompt)):
 		passwd_verification = getpass.getpass(prompt='And one more time for verification: ')
 		if passwd != passwd_verification:
@@ -80,7 +81,7 @@ def get_password(prompt="Enter a password: "):
 		return passwd
 	return None
 
-def print_large_list(options, padding=5, margin_bottom=0, separator=': '):
+def print_large_list(options, padding=5, margin_bottom=0, separator=': ') -> Union[int,int]:
 	highest_index_number_length = len(str(len(options)))
 	longest_line = highest_index_number_length + len(separator) + get_longest_option(options) + padding
 	spaces_without_option = longest_line - (len(separator) + highest_index_number_length)
@@ -101,7 +102,7 @@ def print_large_list(options, padding=5, margin_bottom=0, separator=': '):
 	return column, row
 
 
-def generic_multi_select(options, text="Select one or more of the options above (leave blank to continue): ", sort=True, default=None, allow_empty=False):
+def generic_multi_select(options, text="Select one or more of the options above (leave blank to continue): ", sort=True, default=None, allow_empty=False) -> List:
 	# Checking if the options are different from `list` or `dict` or if they are empty
 	if type(options) not in [list, dict]:
 		log(f" * Generic multi-select doesn't support ({type(options)}) as type of options * ", fg='red')
@@ -213,7 +214,7 @@ class MiniCurses():
 		sys.stdout.write('\033[%d;%df' % (y, x))
 		sys.stdout.flush()
 
-	def deal_with_control_characters(self, char):
+	def deal_with_control_characters(self, char) -> Optional[bool]:
 		mapper = {
 			'\x7f' : 'BACKSPACE',
 			'\r' : 'CR',
@@ -287,7 +288,7 @@ class MiniCurses():
 		if response:
 			return response
 
-def ask_for_superuser_account(prompt='Username for required superuser with sudo privileges: ', forced=False):
+def ask_for_superuser_account(prompt='Username for required superuser with sudo privileges: ', forced=False) -> Dict[Dict[str]]:
 	while 1:
 		new_user = input(prompt).strip(' ')
 
@@ -304,7 +305,7 @@ def ask_for_superuser_account(prompt='Username for required superuser with sudo 
 		password = get_password(prompt=f'Password for user {new_user}: ')
 		return {new_user: {"!password" : password}}
 
-def ask_for_additional_users(prompt='Any additional users to install (leave blank for no users): '):
+def ask_for_additional_users(prompt='Any additional users to install (leave blank for no users): ') ->bool:
 	users = {}
 	superusers = {}
 
