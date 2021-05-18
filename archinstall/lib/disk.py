@@ -561,7 +561,7 @@ def all_disks(advanced:bool,*args, **kwargs):
 	drives = OrderedDict()
 	#for drive in json.loads(sys_command(f'losetup --json', *args, **lkwargs, hide_from_log=True)).decode('UTF_8')['loopdevices']:
 	for drive in json.loads(b''.join(sys_command(f'lsblk --json -l -n -o path,size,type,mountpoint,label,pkname,model', *args, **kwargs, hide_from_log=True)).decode('UTF_8'))['blockdevices']:
-		if not kwargs['partitions'] and drive['type'] == 'part' or advanced == False and drive["type"] == "loop":
+		if not kwargs['partitions'] and drive['type'] == 'part' or advanced == False and drive["type"] == "loop" or "srv" in drive["path"]:
 			continue
 
 		drives[drive['path']] = BlockDevice(drive['path'], drive)
